@@ -5,6 +5,8 @@
 #   dist/libmpv-linux-<arch>.tar.gz   libmpv.so.2 for x86_64 or aarch64
 #   dist/SHA256SUMS
 set -euo pipefail
+# No macOS metadata in the archives (AppleDouble "._" files would unpack as junk elsewhere).
+export COPYFILE_DISABLE=1
 cd "$(dirname "$0")"
 android="${REEL_LIBMPV_ANDROID_CACHE:-$HOME/Library/Caches/reel/libmpv-android}/libs"
 macos="${REEL_LIBMPV_CACHE:-$HOME/Library/Caches/reel/libmpv-1.1.0-n9.0.2}/libmpv.2.dylib"
@@ -12,13 +14,13 @@ rm -rf dist && mkdir dist
 for dir in "$android"/*/; do
   abi="$(basename "$dir")"
   ls "$dir"*.so >/dev/null 2>&1 || continue
-  tar -czf "dist/libmpv-android-$abi.tar.gz" -C "$dir" $(cd "$dir" && ls *.so)
+  tar --no-mac-metadata -czf "dist/libmpv-android-$abi.tar.gz" -C "$dir" $(cd "$dir" && ls *.so)
 done
 linux="${REEL_LIBMPV_LINUX_CACHE:-$HOME/Library/Caches/reel/libmpv-linux}/libs"
 for pair in amd64:x86_64 arm64:aarch64; do
   dir="$linux/${pair%%:*}"
-  [ -f "$dir/libmpv.so.2" ] && tar -czf "dist/libmpv-linux-${pair##*:}.tar.gz" -C "$dir" libmpv.so.2
+  [ -f "$dir/libmpv.so.2" ] && tar --no-mac-metadata -czf "dist/libmpv-linux-${pair##*:}.tar.gz" -C "$dir" libmpv.so.2
 done
-[ -f "$macos" ] && (cd "$(dirname "$macos")" && zip -q -j "$OLDPWD/dist/libmpv-macos.zip" libmpv.2.dylib)
+[ -f "$macos" ] && (cd "$(dirname "$macos")" && zip -q -j -X "$OLDPWD/dist/libmpv-macos.zip" libmpv.2.dylib)
 (cd dist && shasum -a 256 * > SHA256SUMS)
 ls -la dist && cat dist/SHA256SUMS
