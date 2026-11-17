@@ -2,6 +2,7 @@
 # The release's files, from what android/build.sh and macos/build.sh built:
 #   dist/libmpv-android-<abi>.tar.gz  the .so files for one Android ABI (libmpv, FFmpeg, libc++_shared)
 #   dist/libmpv-macos.zip             libmpv.2.dylib (arm64 and x86_64)
+#   dist/libmpv-linux-<arch>.tar.gz   libmpv.so.2 for x86_64 or aarch64
 #   dist/SHA256SUMS
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -12,6 +13,11 @@ for dir in "$android"/*/; do
   abi="$(basename "$dir")"
   ls "$dir"*.so >/dev/null 2>&1 || continue
   tar -czf "dist/libmpv-android-$abi.tar.gz" -C "$dir" $(cd "$dir" && ls *.so)
+done
+linux="${REEL_LIBMPV_LINUX_CACHE:-$HOME/Library/Caches/reel/libmpv-linux}/libs"
+for pair in amd64:x86_64 arm64:aarch64; do
+  dir="$linux/${pair%%:*}"
+  [ -f "$dir/libmpv.so.2" ] && tar -czf "dist/libmpv-linux-${pair##*:}.tar.gz" -C "$dir" libmpv.so.2
 done
 [ -f "$macos" ] && (cd "$(dirname "$macos")" && zip -q -j "$OLDPWD/dist/libmpv-macos.zip" libmpv.2.dylib)
 (cd dist && shasum -a 256 * > SHA256SUMS)
