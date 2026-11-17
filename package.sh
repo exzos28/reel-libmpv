@@ -6,7 +6,7 @@
 #   dist/libmpv-windows-<arch>.zip    libmpv-2.dll for x86_64 or aarch64 (windows/fetch.sh)
 #   dist/SHA256SUMS
 set -euo pipefail
-# No macOS metadata in the archives (AppleDouble "._" files would unpack as junk elsewhere).
+# The same files make the same archives (gzip -n: no timestamp). No macOS metadata in them (AppleDouble "._" files would unpack as junk elsewhere).
 export COPYFILE_DISABLE=1
 cd "$(dirname "$0")"
 android="${REEL_LIBMPV_ANDROID_CACHE:-$HOME/Library/Caches/reel/libmpv-android}/libs"
@@ -15,12 +15,12 @@ rm -rf dist && mkdir dist
 for dir in "$android"/*/; do
   abi="$(basename "$dir")"
   ls "$dir"*.so >/dev/null 2>&1 || continue
-  tar --no-mac-metadata -czf "dist/libmpv-android-$abi.tar.gz" -C "$dir" $(cd "$dir" && ls *.so)
+  tar --no-mac-metadata -cf - -C "$dir" $(cd "$dir" && ls *.so) | gzip -n > "dist/libmpv-android-$abi.tar.gz"
 done
 linux="${REEL_LIBMPV_LINUX_CACHE:-$HOME/Library/Caches/reel/libmpv-linux}/libs"
 for pair in amd64:x86_64 arm64:aarch64; do
   dir="$linux/${pair%%:*}"
-  [ -f "$dir/libmpv.so.2" ] && tar --no-mac-metadata -czf "dist/libmpv-linux-${pair##*:}.tar.gz" -C "$dir" libmpv.so.2
+  [ -f "$dir/libmpv.so.2" ] && tar --no-mac-metadata -cf - -C "$dir" libmpv.so.2 | gzip -n > "dist/libmpv-linux-${pair##*:}.tar.gz"
 done
 windows="${REEL_LIBMPV_WINDOWS_CACHE:-$HOME/Library/Caches/reel/libmpv-windows}"
 for arch in x86_64 aarch64; do
