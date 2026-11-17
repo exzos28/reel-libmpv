@@ -3,6 +3,7 @@
 #   dist/libmpv-android-<abi>.tar.gz  the .so files for one Android ABI (libmpv, FFmpeg, libc++_shared)
 #   dist/libmpv-macos.zip             libmpv.2.dylib (arm64 and x86_64)
 #   dist/libmpv-linux-<arch>.tar.gz   libmpv.so.2 for x86_64 or aarch64
+#   dist/libmpv-windows-<arch>.zip    libmpv-2.dll for x86_64 or aarch64 (windows/fetch.sh)
 #   dist/SHA256SUMS
 set -euo pipefail
 # No macOS metadata in the archives (AppleDouble "._" files would unpack as junk elsewhere).
@@ -20,6 +21,10 @@ linux="${REEL_LIBMPV_LINUX_CACHE:-$HOME/Library/Caches/reel/libmpv-linux}/libs"
 for pair in amd64:x86_64 arm64:aarch64; do
   dir="$linux/${pair%%:*}"
   [ -f "$dir/libmpv.so.2" ] && tar --no-mac-metadata -czf "dist/libmpv-linux-${pair##*:}.tar.gz" -C "$dir" libmpv.so.2
+done
+windows="${REEL_LIBMPV_WINDOWS_CACHE:-$HOME/Library/Caches/reel/libmpv-windows}"
+for arch in x86_64 aarch64; do
+  [ -f "$windows/$arch/libmpv-2.dll" ] && (cd "$windows/$arch" && zip -q -j -X "$OLDPWD/dist/libmpv-windows-$arch.zip" libmpv-2.dll)
 done
 [ -f "$macos" ] && (cd "$(dirname "$macos")" && zip -q -j -X "$OLDPWD/dist/libmpv-macos.zip" libmpv.2.dylib)
 (cd dist && shasum -a 256 * > SHA256SUMS)
