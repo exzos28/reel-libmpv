@@ -2,6 +2,7 @@
 # The release's files, from what android/build.sh and macos/build.sh built:
 #   dist/libmpv-android-<abi>.tar.gz  the .so files for one Android ABI (libmpv, FFmpeg, libc++_shared)
 #   dist/libmpv-macos.zip             libmpv.2.dylib (arm64 and x86_64)
+#   dist/libmpv-apple.zip             Libmpv.xcframework: iOS and iPadOS (device, simulator)
 #   dist/libmpv-linux-<arch>.tar.gz   libmpv.so.2 for x86_64 or aarch64
 #   dist/libmpv-windows-<arch>.zip    libmpv-2.dll for x86_64 or aarch64 (windows/fetch.sh)
 #   dist/SHA256SUMS
@@ -27,5 +28,7 @@ for arch in x86_64 aarch64; do
   [ -f "$windows/$arch/libmpv-2.dll" ] && (cd "$windows/$arch" && zip -q -j -X "$OLDPWD/dist/libmpv-windows-$arch.zip" libmpv-2.dll)
 done
 [ -f "$macos" ] && (cd "$(dirname "$macos")" && zip -q -j -X "$OLDPWD/dist/libmpv-macos.zip" libmpv.2.dylib)
+apple="$(dirname "$macos")/Libmpv.xcframework"
+[ -d "$apple" ] && (cd "$(dirname "$apple")" && zip -q -r -X -y "$OLDPWD/dist/libmpv-apple.zip" Libmpv.xcframework)
 (cd dist && shasum -a 256 * > SHA256SUMS)
 ls -la dist && cat dist/SHA256SUMS

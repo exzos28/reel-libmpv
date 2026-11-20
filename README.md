@@ -9,6 +9,7 @@ Prebuilt [libmpv](https://mpv.io) for reel's video player, built as **LGPL** (no
 | `libmpv-android-arm64-v8a.tar.gz` | Android arm64: `libmpv.so`, FFmpeg's `libav*.so`, `libsw*.so`, the NDK's `libc++_shared.so` |
 | `libmpv-android-armeabi-v7a.tar.gz` | The same for 32-bit ARM |
 | `libmpv-macos.zip` | macOS: `libmpv.2.dylib` (arm64 and x86_64) |
+| `libmpv-apple.zip` | iOS and iPadOS: `Libmpv.xcframework`, a dynamic `Libmpv.framework` for devices (arm64) and the simulator (arm64), iOS 15+ |
 | `libmpv-linux-x86_64.tar.gz`, `libmpv-linux-aarch64.tar.gz` | Linux: `libmpv.so.2` with FFmpeg, libass and libplacebo inside; built on Ubuntu 22.04 (glibc 2.35) |
 | `libmpv-windows-x86_64.zip`, `libmpv-windows-aarch64.zip` | Windows: `libmpv-2.dll` (FFmpeg inside) |
 | `SHA256SUMS` | Their checksums |
@@ -31,6 +32,8 @@ Linux (built with [mpv-build](https://github.com/mpv-player/mpv-build) at `94430
 Windows: not built here. [zhongfly/mpv-winbuild](https://github.com/zhongfly/mpv-winbuild) release `2026-11-17-f92afa75cd`, its LGPL archives (`mpv-dev-lgpl-*.7z`: mpv-winbuild-cmake with `compile-lgpl-libmpv.patch`, which drops `--enable-gpl` and the GPL libraries from FFmpeg and builds mpv with `-Dgpl=false`; mpv git f92afa75cd). `windows/fetch.sh` takes their `libmpv-2.dll` and checks it was built with `-Dgpl=false`. Its sources and build are that project's.
 
 macOS: [MPVKit](https://github.com/mpvkit/MPVKit) `1.1.0-n9.0.2`, its LGPL product ("MPVKit", not "MPVKit-GPL"), linked into one dylib.
+
+iOS and iPadOS: the same MPVKit release's iOS slices, linked into one dynamic framework per slice (it draws through MoltenVK's Vulkan into a CAMetalLayer, decodes with VideoToolbox).
 
 ## Licence
 
@@ -59,6 +62,12 @@ macOS (downloads MPVKit's XCFrameworks, about 200 MB, and links them):
 
 ```
 macos/build.sh build
+```
+
+iOS and iPadOS (the same XCFrameworks, their iOS slices; about 40 seconds once downloaded):
+
+```
+apple/build.sh build
 ```
 
 Windows (downloads zhongfly's LGPL build and checks it):
